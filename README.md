@@ -2,7 +2,11 @@
 Modified version of ericzacharia's "MusicGenreClassifier" 
 Link: https://github.com/ericzacharia/MusicGenreClassifier
 
+The program uses ericzacharia's CNN model to detect the genre of a musical sample, but modifications were made to suite my FYP's purpose.
 
+
+
+Modifications made:
 The purpose of this repo is to have a program that can detect the genre of audio samples given from OpenAI's Jukebox.
 
 Each 30 second WAV audio file is split in 3 parts (10 seconds each).
