@@ -104,8 +104,21 @@ class_labels = ['blues', 'classical', 'country',
                 'disco', 'hiphop', 'metal', 'pop', 'reggae', 'rock']
 
 
+# Using object notation
+add_selectbox = st.sidebar.selectbox(
+    "How would you like to be contacted?",
+    ("Email", "Home phone", "Mobile phone")
+)
 
-#Model Loading
+# Using "with" notation
+with st.sidebar:
+    add_radio = st.radio(
+        "Choose a shipping method",
+        ("Standard (5-15 days)", "Express (2-5 days)")
+    )
+
+
+#------------------------Model Loading----------------------------
 model = cnn(input_shape=(288, 432, 4), classes=9)
 model.load_weights("CNNModelWeights.h5")
 
@@ -182,54 +195,58 @@ if file is not None:
     st.write(f"")
     st.write(f"")
     
+    #Creating tabs
+    tab1, tab2, tab3 = st.tabs(["Snippet 1", "Snippet 2", "Snippet 3"])
     
     #Snippet 1
-    st.write("### Snippet 1")
-    st.audio('extracted_0.wav', "audio/mp3")
-    st.write(f"")
-    
-    st.write(f"### Genre Prediction Snippet 1: {class_labels[class_label_0]}")
-    st.pyplot(fig_0)
-    st.write(f"")
-    
-    st.write(f"### Mel Spectrogram First Snippet")
-    st.image("melspectrogram_0.png", use_column_width=True)  
-    
-    st.write(f"")
-    st.write(f"")
-    st.write(f"")
-    st.write(f"")
+    with tab1:
+        st.write("### Snippet 1")
+        st.audio('extracted_0.wav', "audio/mp3")
+        st.write(f"")
+        
+        st.write(f"### Genre Prediction Snippet 1: {class_labels[class_label_0]}")
+        st.pyplot(fig_0)
+        st.write(f"")
+        
+        st.write(f"### Mel Spectrogram First Snippet")
+        st.image("melspectrogram_0.png", use_column_width=True)  
+        
+        st.write(f"")
+        st.write(f"")
+        st.write(f"")
+        st.write(f"")
     
     #Snippet 2
-    st.write("### Snippet 2")
-    st.audio('extracted_1.wav', "audio/mp3")
-    
-    st.write(f"### Genre Prediction Snippet 2: {class_labels[class_label_1]}")
-    st.pyplot(fig_1)
-    
-    st.write(f"### Mel Spectrogram Second Snippet")
-    st.image("melspectrogram_1.png", use_column_width=True)   
-    
-    st.write(f"")
-    st.write(f"")
-    st.write(f"")
-    st.write(f"")
+    with tab2:
+        st.write("### Snippet 2")
+        st.audio('extracted_1.wav', "audio/mp3")
+        
+        st.write(f"### Genre Prediction Snippet 2: {class_labels[class_label_1]}")
+        st.pyplot(fig_1)
+        
+        st.write(f"### Mel Spectrogram Second Snippet")
+        st.image("melspectrogram_1.png", use_column_width=True)   
+        
+        st.write(f"")
+        st.write(f"")
+        st.write(f"")
+        st.write(f"")
 
     
     
     #Snippet 3
-    st.write("### Snippet 3")
-    st.audio('extracted_2.wav', "audio/mp3")
-    
-    st.write(f"### Genre Prediction Snippet 3: {class_labels[class_label_2]}")
-    st.pyplot(fig_2)
-    
-    st.write(f"### Mel Spectrogram Third Snippet")
-    st.image("melspectrogram_2.png", use_column_width=True)
-    
-    
-    
+    with tab3:
+        st.write("### Snippet 3")
+        st.audio('extracted_2.wav', "audio/mp3")
+        
+        st.write(f"### Genre Prediction Snippet 3: {class_labels[class_label_2]}")
+        st.pyplot(fig_2)
+        
+        st.write(f"### Mel Spectrogram Third Snippet")
+        st.image("melspectrogram_2.png", use_column_width=True)
     
     
-
+    
+    
+    
 
