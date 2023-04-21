@@ -96,7 +96,7 @@ librosa_preset['sr'] = 44100
 
 
 #=====================Design & Entering of WAV File=================
-st.write("""# Music Genre Classifier""")
+st.write("""# Genre Classification""")
 st.write("##### An altered version by Neil Bugeja of Eric Zacharia's 'Convolutional Neural Network Classifier'")
 file = st.file_uploader(
     "Upload your WAV File, and watch the CNN model classify the music genre.", type=["wav"])
