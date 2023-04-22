@@ -50,10 +50,16 @@ def extract_relevant_1(wav_file, t1, t2):
 def extract_relevant_2(wav_file, t1, t2):
     wav = AudioSegment.from_wav(wav_file)
     wav = wav[1000*t1:1000*t2]
-    wav.export("extracted_2.wav", format='wav')        
+    wav.export("extracted_2.wav", format='wav')
+    
+def extract_relevant_3(wav_file, t1, t2):
+    wav = AudioSegment.from_wav(wav_file)
+    wav = wav[1000*t1:1000*t2]
+    wav.export("extracted_3.wav", format='wav')      
 
 
-def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2):
+#Create melspectogram of every snippet
+def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2, wav_file_3):
     #First snippet
     y, sr = librosa.load(wav_file_0, duration=3)
     mels = librosa.feature.melspectrogram(y=y, sr=sr)
@@ -77,8 +83,17 @@ def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2):
     FigureCanvasAgg(fig)
     plt.imshow(librosa.power_to_db(mels, ref=np.max))
     plt.savefig('melspectrogram_2.png')
+    
+    #Full Song
+    y, sr = librosa.load(wav_file_3, duration=3)
+    mels = librosa.feature.melspectrogram(y=y, sr=sr)
+    fig = plt.Figure()
+    FigureCanvasAgg(fig)
+    plt.imshow(librosa.power_to_db(mels, ref=np.max))
+    plt.savefig('melspectrogram_3.png')
 
 
+#Predicting the genre
 def predict(image_data, model):
     image = img_to_array(image_data).reshape((1, 288, 432, 4))
     prediction = model.predict(image / 255)
@@ -123,15 +138,16 @@ model = cnn(input_shape=(288, 432, 4), classes=9)
 model.load_weights("CNNModelWeights.h5")
 
 
-#=========================Start Classification==========================
+#=========================Start Genre Classification==========================
 if file is not None:
     #Predicting genre of each snippet
     extract_relevant_0(file, 0, 10)
     extract_relevant_1(file, 10, 20)
     extract_relevant_2(file, 20, 30)
+    extract_relevant_2(file, 0, 30)
     
     #Creating melspectogram of every snippet
-    create_melspectrogram("extracted_0.wav","extracted_1.wav","extracted_2.wav")
+    create_melspectrogram("extracted_0.wav","extracted_1.wav","extracted_2.wav","extracted_3.wav")
     
     #image data of every snippet
     image_data_0 = load_img('melspectrogram_0.png',
@@ -143,16 +159,20 @@ if file is not None:
     image_data_2 = load_img('melspectrogram_2.png',
                           color_mode='rgba', target_size=(288, 432))
     
+    image_data_3 = load_img('melspectrogram_3.png',
+                          color_mode='rgba', target_size=(288, 432))
+    
     
     #Prediction of every snippet
-
     class_label_0, prediction_0 = predict(image_data_0, model)
     class_label_1, prediction_1 = predict(image_data_1, model)
     class_label_2, prediction_2 = predict(image_data_2, model)
+    class_label_3, prediction_3 = predict(image_data_3, model)
     
     prediction_0 = prediction_0.reshape((9,))
     prediction_1 = prediction_1.reshape((9,))
     prediction_2 = prediction_2.reshape((9,))
+    prediction_3 = prediction_3.reshape((9,))
     
     #Bar Graph Configuration
     color_data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -182,6 +202,14 @@ if file is not None:
     plt.xticks(rotation=45)
     ax.set_title(
         "Snippet 3: Probability Distribution Over Different Genres")
+    
+    #Graph full song
+    fig_3, ax = plt.subplots(figsize=(6, 4.5))
+    ax.bar(x=class_labels, height=prediction_2,
+           color=my_cmap(my_norm(color_data)))
+    plt.xticks(rotation=45)
+    ax.set_title(
+        "Full Song: Probability Distribution Over Different Genres")
 
 
 
@@ -196,7 +224,7 @@ if file is not None:
     st.write(f"")
     
     #Creating tabs
-    tab1, tab2, tab3 = st.tabs(["Snippet 1", "Snippet 2", "Snippet 3"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Snippet 1", "Snippet 2", "Snippet 3","Full Song"])
     
     #Snippet 1
     with tab1:
@@ -244,6 +272,18 @@ if file is not None:
         
         st.write(f"### Mel Spectrogram Third Snippet")
         st.image("melspectrogram_2.png", use_column_width=True)
+        
+        
+    #Full Song
+    with tab4:
+        st.write("### Full Song")
+        st.audio(file, "audio/mp3")
+        
+        st.write(f"### Genre Prediction Full Song: {class_labels[class_label_3]}")
+        st.pyplot(fig_3)
+        
+        st.write(f"### Mel Spectrogram Full Song")
+        st.image("melspectrogram_3.png", use_column_width=True)    
     
     
     
