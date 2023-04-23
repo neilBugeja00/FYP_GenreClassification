@@ -42,22 +42,22 @@ def cnn(input_shape=(288, 432, 4), classes=9):
 def extract_relevant_0(wav_file, t1, t2):
     wav = AudioSegment.from_wav(wav_file)
     wav = wav[1000*t1:1000*t2]
-    wav.export("extracted_0.wav", format='wav')
+    wav.export("Resources/extracted_0.wav", format='wav')
     
 def extract_relevant_1(wav_file, t1, t2):
     wav = AudioSegment.from_wav(wav_file)
     wav = wav[1000*t1:1000*t2]
-    wav.export("extracted_1.wav", format='wav')
+    wav.export("Resources/extracted_1.wav", format='wav')
     
 def extract_relevant_2(wav_file, t1, t2):
     wav = AudioSegment.from_wav(wav_file)
     wav = wav[1000*t1:1000*t2]
-    wav.export("extracted_2.wav", format='wav')
+    wav.export("Resources/extracted_2.wav", format='wav')
     
 def extract_relevant_3(wav_file, t1, t2):
     wav = AudioSegment.from_wav(wav_file)
     wav = wav[1000*t1:1000*t2]
-    wav.export("extracted_3.wav", format='wav')      
+    wav.export("Resources/extracted_3.wav", format='wav')      
 
 
 #Create melspectogram of every snippet
@@ -68,7 +68,7 @@ def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2, wav_file_3):
     fig = plt.Figure()
     FigureCanvasAgg(fig)
     plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('melspectrogram_0.png')
+    plt.savefig('Resources/melspectrogram_0.png')
     
     #Second snippet
     y, sr = librosa.load(wav_file_1, duration=3)
@@ -76,7 +76,7 @@ def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2, wav_file_3):
     fig = plt.Figure()
     FigureCanvasAgg(fig)
     plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('melspectrogram_1.png')
+    plt.savefig('Resources/melspectrogram_1.png')
     
     #Third snippet
     y, sr = librosa.load(wav_file_2, duration=3)
@@ -84,7 +84,7 @@ def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2, wav_file_3):
     fig = plt.Figure()
     FigureCanvasAgg(fig)
     plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('melspectrogram_2.png')
+    plt.savefig('Resources/melspectrogram_2.png')
     
     #Full Song
     y, sr = librosa.load(wav_file_3, duration=3)
@@ -92,7 +92,7 @@ def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2, wav_file_3):
     fig = plt.Figure()
     FigureCanvasAgg(fig)
     plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('melspectrogram_3.png')
+    plt.savefig('Resources/melspectrogram_3.png')
 
 
 #Predicting the genre
@@ -139,19 +139,19 @@ if file is not None:
     extract_relevant_2(file, 0, 30)
     
     #Creating melspectogram of every snippet
-    create_melspectrogram("extracted_0.wav","extracted_1.wav","extracted_2.wav","extracted_3.wav")
+    create_melspectrogram("Resources/extracted_0.wav","Resources/extracted_1.wav","Resources/extracted_2.wav","Resources/extracted_3.wav")
     
     #image data of every snippet
-    image_data_0 = load_img('melspectrogram_0.png',
+    image_data_0 = load_img('Resources/melspectrogram_0.png',
                           color_mode='rgba', target_size=(288, 432))
     
-    image_data_1 = load_img('melspectrogram_1.png',
+    image_data_1 = load_img('Resources/melspectrogram_1.png',
                           color_mode='rgba', target_size=(288, 432))
     
-    image_data_2 = load_img('melspectrogram_2.png',
+    image_data_2 = load_img('Resources/melspectrogram_2.png',
                           color_mode='rgba', target_size=(288, 432))
     
-    image_data_3 = load_img('melspectrogram_3.png',
+    image_data_3 = load_img('Resources/melspectrogram_3.png',
                           color_mode='rgba', target_size=(288, 432))
     
     
@@ -221,7 +221,7 @@ if file is not None:
     #Snippet 1
     with tab1:
         st.write("### Snippet 1")
-        st.audio('extracted_0.wav', "audio/mp3")
+        st.audio('Resources/extracted_0.wav', "audio/mp3")
         st.write(f"")
         
         st.write(f"### Genre Prediction Snippet 1: {class_labels[class_label_0]}")
@@ -229,7 +229,7 @@ if file is not None:
         st.write(f"")
         
         st.write(f"### Mel Spectrogram First Snippet")
-        st.image("melspectrogram_0.png", use_column_width=True)  
+        st.image("Resources/melspectrogram_0.png", use_column_width=True)  
         
         st.write(f"")
         st.write(f"")
@@ -239,13 +239,13 @@ if file is not None:
     #Snippet 2
     with tab2:
         st.write("### Snippet 2")
-        st.audio('extracted_1.wav', "audio/mp3")
+        st.audio('Resources/extracted_1.wav', "audio/mp3")
         
         st.write(f"### Genre Prediction Snippet 2: {class_labels[class_label_1]}")
         st.pyplot(fig_1)
         
         st.write(f"### Mel Spectrogram Second Snippet")
-        st.image("melspectrogram_1.png", use_column_width=True)   
+        st.image("Resources/melspectrogram_1.png", use_column_width=True)   
         
         st.write(f"")
         st.write(f"")
@@ -257,13 +257,13 @@ if file is not None:
     #Snippet 3
     with tab3:
         st.write("### Snippet 3")
-        st.audio('extracted_2.wav', "audio/mp3")
+        st.audio('Resources/extracted_2.wav', "audio/mp3")
         
         st.write(f"### Genre Prediction Snippet 3: {class_labels[class_label_2]}")
         st.pyplot(fig_2)
         
         st.write(f"### Mel Spectrogram Third Snippet")
-        st.image("melspectrogram_2.png", use_column_width=True)
+        st.image("Resources/melspectrogram_2.png", use_column_width=True)
         
         
     #Full Song
@@ -275,7 +275,7 @@ if file is not None:
         st.pyplot(fig_3)
         
         st.write(f"### Mel Spectrogram Full Song")
-        st.image("melspectrogram_3.png", use_column_width=True)    
+        st.image("Resources/melspectrogram_3.png", use_column_width=True)    
     
     
     
