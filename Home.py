@@ -197,7 +197,7 @@ if file is not None:
     
     #Graph full song
     fig_3, ax = plt.subplots(figsize=(6, 4.5))
-    ax.bar(x=class_labels, height=prediction_2,
+    ax.bar(x=class_labels, height=prediction_3,
            color=my_cmap(my_norm(color_data)))
     plt.xticks(rotation=45)
     ax.set_title(
