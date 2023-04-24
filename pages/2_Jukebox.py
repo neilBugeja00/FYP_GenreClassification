@@ -1,12 +1,12 @@
 import streamlit as st
 import base64
 
-st.set_page_config(page_title="CNN Code", page_icon="")
+st.set_page_config(page_title="Jukebox Code", page_icon="")
 
-st.markdown("# CNN Code")
-st.sidebar.header("CNN Code")
+st.markdown("# Jukebox Code")
+st.sidebar.header("Jukebox Code")
 st.write(
-    """This is Eric Zacharia's code used for the CNN in his 'Convolutional Neural Network Classifier' open source project."""
+    """This is a code extract used to run the Jukebox file"""
 )
 
 def show_pdf(file_path):
@@ -15,5 +15,5 @@ def show_pdf(file_path):
     pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="800" height="800" type="application/pdf"></iframe>'
     st.markdown(pdf_display, unsafe_allow_html=True)
 
-show_pdf('Resources/CNN Code.pdf')
+show_pdf('Resources/Jukebox.pdf')
       
