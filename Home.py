@@ -136,7 +136,7 @@ if file is not None:
     extract_relevant_0(file, 0, 10)
     extract_relevant_1(file, 10, 20)
     extract_relevant_2(file, 20, 30)
-    extract_relevant_2(file, 0, 30)
+    extract_relevant_3(file, 0, 30)
     
     #Creating melspectogram of every snippet
     create_melspectrogram("Resources/extracted_0.wav","Resources/extracted_1.wav","Resources/extracted_2.wav","Resources/extracted_3.wav")
@@ -168,7 +168,7 @@ if file is not None:
     
     #Bar Graph Configuration
     color_data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    my_cmap = mpl.colormaps['jet']
+    my_cmap = mpl.colormaps['gnuplot']
     my_norm = Normalize(vmin=0, vmax=9)
 
     #Graph snippet 1
@@ -178,6 +178,8 @@ if file is not None:
     plt.xticks(rotation=45)
     ax.set_title(
         "Snippet 1: Probability Distribution Over Different Genres")
+    plt.xlabel("Predicted Genre")
+    plt.ylabel("Probability")
     
     #Graph snippet 2
     fig_1, ax = plt.subplots(figsize=(6, 4.5))
@@ -186,6 +188,8 @@ if file is not None:
     plt.xticks(rotation=45)
     ax.set_title(
         "Snippet 2: Probability Distribution Over Different Genres")
+    plt.xlabel("Predicted Genre")
+    plt.ylabel("Probability")
     
     #Graph snippet 2
     fig_2, ax = plt.subplots(figsize=(6, 4.5))
@@ -194,6 +198,8 @@ if file is not None:
     plt.xticks(rotation=45)
     ax.set_title(
         "Snippet 3: Probability Distribution Over Different Genres")
+    plt.xlabel("Predicted Genre")
+    plt.ylabel("Probability")
     
     #Graph full song
     fig_3, ax = plt.subplots(figsize=(6, 4.5))
@@ -202,6 +208,8 @@ if file is not None:
     plt.xticks(rotation=45)
     ax.set_title(
         "Full Song: Probability Distribution Over Different Genres")
+    plt.xlabel("Predicted Genre")
+    plt.ylabel("Probability")
 
 
 
