@@ -60,7 +60,7 @@ def extract_relevant_3(wav_file, t1, t2):
     wav.export("Resources/extracted_3.wav", format='wav')      
 
 
-#Create melspectogram of every snippet
+#Create melspectogram cof every snippet
 def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2, wav_file_3):
     #First snippet
     y, sr = librosa.load(wav_file_0, duration=3)
