@@ -1,0 +1,21 @@
+To use tensorboard on remote server:
+
+-Connect to server
+-Open tensorboard (tensorboard --logdir logs/fit)
+-Forward port to local port
+	-Enter following command on local pc:
+	ssh -N -L 6006:localhost:6006 root@185.158.179.210 -p 40304
+	
+
+Remove previous tensorboard graphs:
+rm -rf ./logs/
+	
+	
+	
+Remote Server Bash:
+
+python -m pip install -U matplotlib
+pip install librosa
+
+
+

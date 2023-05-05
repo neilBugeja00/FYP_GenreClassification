@@ -2,11 +2,16 @@ import streamlit as st
 import base64
 import matplotlib as mpl
 import numpy as np
+import json
+import csv
+import sys
+import numpy as np 
 import chardet
 from pydub import AudioSegment
 from presets import Preset
 import librosa as librosa
 import librosa.display
+from tensorflow import keras
 from bing_image_downloader import downloader
 from keras.layers import Input, Dense, Activation, BatchNormalization, Flatten, Conv2D, MaxPooling2D
 from keras.models import Model
@@ -17,99 +22,159 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.cm as cm
 from matplotlib.colors import Normalize
 
-#=========================METHODS======================
-def cnn(input_shape=(288, 432, 4), classes=9):
-    def step(dim, X):
-        X = Conv2D(dim, kernel_size=(3, 3), strides=(1, 1))(X)
-        X = BatchNormalization(axis=3)(X)
-        X = Activation('relu')(X)
-        return MaxPooling2D((2, 2))(X)
-    X_input = Input(input_shape)
-    X = X_input
-    layer_dims = [8, 16, 32, 64, 128, 256]
-    for dim in layer_dims:
-        X = step(dim, X)
+#=========================DECLARATIONS======================
+sr = 22050
 
-    X = Flatten()(X)
-    X = Dense(classes, activation='softmax',
-              name=f'fc{classes}',  kernel_initializer=glorot_uniform(seed=9))(X)
-    model = Model(inputs=X_input, outputs=X, name='cnn')
-    return model
+TOTAL_SAMPLES = 29*sr
+NUM_SLICES = 3
+SAMPLES_PER_SLICE = int(TOTAL_SAMPLES / NUM_SLICES)
+
+csv.field_size_limit(sys.maxsize)
+csv_detection_path = './Resources/song_detection.csv'
+
+librosa_preset = Preset(librosa)
+librosa_preset['sr'] = 22050
+
+#=========================METHODS======================
+
 
 #Three extract relevant are required to snip the song in 3 parts
 #and test the genre of every snippet
 
-def extract_relevant_0(wav_file, t1, t2):
+def csv_write_data(audio_path, csv_path):
+    rows = []
+    
+    song, sr = librosa.load(audio_path, duration=29)
+    
+    for s in range(NUM_SLICES):
+        start_sample = SAMPLES_PER_SLICE * s
+        end_sample = start_sample + SAMPLES_PER_SLICE
+                
+                
+        mfcc = librosa.feature.mfcc(y=song[start_sample:end_sample], sr=sr, n_mfcc=40)
+        mfcc = mfcc.T
+
+        rows.append([4,json.dumps(mfcc.tolist())])
+    
+    with open(csv_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Write the header row
+        writer.writerow(["genre", "mfcc"])
+
+        # Write the values rows
+        for row in rows:
+            writer.writerow(row)     
+
+
+#Read MFCC data from CSV
+def csv_read_data(csv_path):
+    # Load data from CSV file
+    with open(csv_path, 'r') as csvfile:
+        reader = csv.reader(csvfile)
+
+        # Skip the header row
+        next(reader)
+
+        # Initialize lists to hold genre and MFCC data
+        genres = []
+        mfcc = []
+
+        # Iterate over each row of the CSV file
+        for row in reader:
+            # Extract genre and MFCC data from the row
+            genre = int(row[0])
+            mfcc_data = json.loads(row[1])
+
+            # Append genre and MFCC data to lists
+            genres.append(genre)
+            mfcc.append(mfcc_data)
+
+    # Convert lists to numpy arrays
+    X = np.array(mfcc)
+    y = np.array(genres)
+
+    return X, y
+
+def save_snippets(wav_file):
     wav = AudioSegment.from_wav(wav_file)
-    wav = wav[1000*t1:1000*t2]
+    wav = wav[1000*0:1000*10]
     wav.export("Resources/extracted_0.wav", format='wav')
     
-def extract_relevant_1(wav_file, t1, t2):
     wav = AudioSegment.from_wav(wav_file)
-    wav = wav[1000*t1:1000*t2]
+    wav = wav[1000*10:1000*20]
     wav.export("Resources/extracted_1.wav", format='wav')
     
-def extract_relevant_2(wav_file, t1, t2):
     wav = AudioSegment.from_wav(wav_file)
-    wav = wav[1000*t1:1000*t2]
+    wav = wav[1000*20:1000*30]
     wav.export("Resources/extracted_2.wav", format='wav')
-    
-def extract_relevant_3(wav_file, t1, t2):
-    wav = AudioSegment.from_wav(wav_file)
-    wav = wav[1000*t1:1000*t2]
-    wav.export("Resources/extracted_3.wav", format='wav')      
 
-
-#Create melspectogram cof every snippet
-def create_melspectrogram(wav_file_0, wav_file_1, wav_file_2, wav_file_3):
+#Create mfcc of every snippet
+def create_mfcc(wav_file_0, wav_file_1, wav_file_2):
     #First snippet
-    y, sr = librosa.load(wav_file_0, duration=3)
-    mels = librosa.feature.melspectrogram(y=y, sr=sr)
-    fig = plt.Figure()
+    y, sr = librosa.load(wav_file_0, duration=10)
+    mfcc0 = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
+    #fig = plt.Figure()
+    fig, ax = plt.subplots(figsize=(10, 4))
+    plt.imshow(mfcc0, interpolation='nearest', origin='lower', aspect='auto', cmap=cm.coolwarm)
+    plt.colorbar()
+    plt.title('MFCCs')
+    plt.xlabel('Frame')
+    plt.ylabel('MFCC Coefficients')
+        
     FigureCanvasAgg(fig)
-    plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('Resources/melspectrogram_0.png')
+    plt.savefig('Resources/mfcc_0.png')
     
     #Second snippet
-    y, sr = librosa.load(wav_file_1, duration=3)
-    mels = librosa.feature.melspectrogram(y=y, sr=sr)
-    fig = plt.Figure()
+    y, sr = librosa.load(wav_file_1, duration=10)
+    mfcc1 = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
+    #fig = plt.Figure()
+    fig, ax = plt.subplots(figsize=(10, 4))
+    plt.imshow(mfcc1, interpolation='nearest', origin='lower', aspect='auto', cmap=cm.coolwarm)
+    plt.colorbar()
+    plt.title('MFCCs')
+    plt.xlabel('Frame')
+    plt.ylabel('MFCC Coefficients')
+        
     FigureCanvasAgg(fig)
-    plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('Resources/melspectrogram_1.png')
+    plt.savefig('Resources/mfcc_1.png')
     
-    #Third snippet
-    y, sr = librosa.load(wav_file_2, duration=3)
-    mels = librosa.feature.melspectrogram(y=y, sr=sr)
-    fig = plt.Figure()
+    #First snippet
+    y, sr = librosa.load(wav_file_2, duration=10)
+    mfcc2 = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
+    #fig = plt.Figure()
+    fig, ax = plt.subplots(figsize=(10, 4))
+    plt.imshow(mfcc2, interpolation='nearest', origin='lower', aspect='auto', cmap=cm.coolwarm)
+    plt.colorbar()
+    plt.title('MFCCs')
+    plt.xlabel('Frame')
+    plt.ylabel('MFCC Coefficients')
+        
     FigureCanvasAgg(fig)
-    plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('Resources/melspectrogram_2.png')
+    plt.savefig('Resources/mfcc_2.png')
     
-    #Full Song
-    y, sr = librosa.load(wav_file_3, duration=3)
-    mels = librosa.feature.melspectrogram(y=y, sr=sr)
-    fig = plt.Figure()
-    FigureCanvasAgg(fig)
-    plt.imshow(librosa.power_to_db(mels, ref=np.max))
-    plt.savefig('Resources/melspectrogram_3.png')
 
+def predict(model, X, idx):
+    
+    genre_dict = {
+        0 : "folk",
+        1 : "pop",
+        2 : "rock",
+        3 : "country",
+        4 : "classical",
+        5 : "jazz",
+        6 : "hiphop",
+        }
+        
+    predictions = model.predict(X)
+    genre = np.argmax(predictions[idx])
+    
+    prediction = genre_dict[genre]
+    
+    return prediction
+    
+    
 
-#Predicting the genre
-def predict(image_data, model):
-    image = img_to_array(image_data).reshape((1, 288, 432, 4))
-    prediction = model.predict(image / 255)
-    prediction = prediction.reshape((9, ))
-    class_label = np.argmax(prediction)
-    return class_label, prediction
-
-
-
-
-
-#Definitions
-librosa_preset = Preset(librosa)
-librosa_preset['sr'] = 44100
 
 
 #=====================Design & Entering of WAV File=================
@@ -117,8 +182,6 @@ st.write("""# Genre Classification""")
 st.write("##### An altered version by Neil Bugeja of Eric Zacharia's 'Convolutional Neural Network Classifier'")
 file = st.file_uploader(
     "Upload your WAV File, and watch the CNN model classify the music genre.", type=["wav"])
-class_labels = ['blues', 'classical', 'country',
-                'disco', 'hiphop', 'metal', 'pop', 'reggae', 'rock']
 
 
 
@@ -126,94 +189,35 @@ class_labels = ['blues', 'classical', 'country',
 
 
 #------------------------Model Loading----------------------------
-model = cnn(input_shape=(288, 432, 4), classes=9)
-model.load_weights("CNNModelWeights.h5")
+model = keras.models.load_model('./Model Final/MFCC_Model')
 
 
 #=========================Start Genre Classification==========================
-if file is not None:
-    #Predicting genre of each snippet
-    extract_relevant_0(file, 0, 10)
-    extract_relevant_1(file, 10, 20)
-    extract_relevant_2(file, 20, 30)
-    extract_relevant_3(file, 0, 30)
+if file is not None:   
+    
+    #Write song into CSV file    
+    csv_write_data(file, csv_detection_path)
+    
+    #Load song from csv file
+    X, y = csv_read_data(csv_detection_path)
+    
+    #Save snippets of the song as WAV files
+    save_snippets(file)
     
     #Creating melspectogram of every snippet
-    create_melspectrogram("Resources/extracted_0.wav","Resources/extracted_1.wav","Resources/extracted_2.wav","Resources/extracted_3.wav")
-    
-    #image data of every snippet
-    image_data_0 = load_img('Resources/melspectrogram_0.png',
-                          color_mode='rgba', target_size=(288, 432))
-    
-    image_data_1 = load_img('Resources/melspectrogram_1.png',
-                          color_mode='rgba', target_size=(288, 432))
-    
-    image_data_2 = load_img('Resources/melspectrogram_2.png',
-                          color_mode='rgba', target_size=(288, 432))
-    
-    image_data_3 = load_img('Resources/melspectrogram_3.png',
-                          color_mode='rgba', target_size=(288, 432))
-    
-    
+    create_mfcc('./Resources/extracted_0.wav', './Resources/extracted_1.wav','./Resources/extracted_2.wav')
+
     #Prediction of every snippet
-    class_label_0, prediction_0 = predict(image_data_0, model)
-    class_label_1, prediction_1 = predict(image_data_1, model)
-    class_label_2, prediction_2 = predict(image_data_2, model)
-    class_label_3, prediction_3 = predict(image_data_3, model)
-    
-    prediction_0 = prediction_0.reshape((9,))
-    prediction_1 = prediction_1.reshape((9,))
-    prediction_2 = prediction_2.reshape((9,))
-    prediction_3 = prediction_3.reshape((9,))
+    prediction_snippet0 = predict(model,X,0)
+    prediction_snippet1 = predict(model,X,1)
+    prediction_snippet2 = predict(model,X,2)
     
     #Bar Graph Configuration
-    color_data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    my_cmap = mpl.colormaps['gnuplot']
-    my_norm = Normalize(vmin=0, vmax=9)
+    #color_data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    #my_cmap = mpl.colormaps['gnuplot']
+    #my_norm = Normalize(vmin=0, vmax=9)
 
-    #Graph snippet 1
-    fig_0, ax = plt.subplots(figsize=(6, 4.5))
-    ax.bar(x=class_labels, height=prediction_0,
-           color=my_cmap(my_norm(color_data)))
-    plt.xticks(rotation=45)
-    ax.set_title(
-        "Snippet 1: Probability Distribution Over Different Genres")
-    plt.xlabel("Predicted Genre")
-    plt.ylabel("Probability")
     
-    #Graph snippet 2
-    fig_1, ax = plt.subplots(figsize=(6, 4.5))
-    ax.bar(x=class_labels, height=prediction_1,
-           color=my_cmap(my_norm(color_data)))
-    plt.xticks(rotation=45)
-    ax.set_title(
-        "Snippet 2: Probability Distribution Over Different Genres")
-    plt.xlabel("Predicted Genre")
-    plt.ylabel("Probability")
-    
-    #Graph snippet 2
-    fig_2, ax = plt.subplots(figsize=(6, 4.5))
-    ax.bar(x=class_labels, height=prediction_2,
-           color=my_cmap(my_norm(color_data)))
-    plt.xticks(rotation=45)
-    ax.set_title(
-        "Snippet 3: Probability Distribution Over Different Genres")
-    plt.xlabel("Predicted Genre")
-    plt.ylabel("Probability")
-    
-    #Graph full song
-    fig_3, ax = plt.subplots(figsize=(6, 4.5))
-    ax.bar(x=class_labels, height=prediction_3,
-           color=my_cmap(my_norm(color_data)))
-    plt.xticks(rotation=45)
-    ax.set_title(
-        "Full Song: Probability Distribution Over Different Genres")
-    plt.xlabel("Predicted Genre")
-    plt.ylabel("Probability")
-
-
-
-
     #==============Website Design==================
     st.write(f"### Full Song:")
     st.audio(file, "audio/mp3")
@@ -224,7 +228,7 @@ if file is not None:
     st.write(f"")
     
     #Creating tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["Snippet 1", "Snippet 2", "Snippet 3","Full Song"])
+    tab1, tab2, tab3 = st.tabs(["Snippet 1", "Snippet 2", "Snippet 3"])
     
     #Snippet 1
     with tab1:
@@ -232,12 +236,12 @@ if file is not None:
         st.audio('Resources/extracted_0.wav', "audio/mp3")
         st.write(f"")
         
-        st.write(f"### Genre Prediction Snippet 1: {class_labels[class_label_0]}")
-        st.pyplot(fig_0)
+        st.write(f"### Genre Prediction Snippet 1: "+prediction_snippet0)
+        #st.pyplot(fig_0)
         st.write(f"")
         
         st.write(f"### Mel Spectrogram First Snippet")
-        st.image("Resources/melspectrogram_0.png", use_column_width=True)  
+        st.image("Resources/mfcc_0.png", use_column_width=True)  
         
         st.write(f"")
         st.write(f"")
@@ -249,11 +253,11 @@ if file is not None:
         st.write("### Snippet 2")
         st.audio('Resources/extracted_1.wav', "audio/mp3")
         
-        st.write(f"### Genre Prediction Snippet 2: {class_labels[class_label_1]}")
-        st.pyplot(fig_1)
+        st.write(f"### Genre Prediction Snippet 2: "+prediction_snippet1)
+        #st.pyplot(fig_1)
         
         st.write(f"### Mel Spectrogram Second Snippet")
-        st.image("Resources/melspectrogram_1.png", use_column_width=True)   
+        st.image("Resources/mfcc_1.png", use_column_width=True)   
         
         st.write(f"")
         st.write(f"")
@@ -267,23 +271,12 @@ if file is not None:
         st.write("### Snippet 3")
         st.audio('Resources/extracted_2.wav', "audio/mp3")
         
-        st.write(f"### Genre Prediction Snippet 3: {class_labels[class_label_2]}")
-        st.pyplot(fig_2)
+        st.write(f"### Genre Prediction Snippet 3: "+prediction_snippet2)
+        #st.pyplot(fig_2)
         
         st.write(f"### Mel Spectrogram Third Snippet")
-        st.image("Resources/melspectrogram_2.png", use_column_width=True)
+        st.image("Resources/mfcc_2.png", use_column_width=True)
         
-        
-    #Full Song
-    with tab4:
-        st.write("### Full Song")
-        st.audio(file, "audio/mp3")
-        
-        st.write(f"### Genre Prediction Full Song: {class_labels[class_label_3]}")
-        st.pyplot(fig_3)
-        
-        st.write(f"### Mel Spectrogram Full Song")
-        st.image("Resources/melspectrogram_3.png", use_column_width=True)    
     
     
     
