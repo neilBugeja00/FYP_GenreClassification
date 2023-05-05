@@ -14,6 +14,7 @@ Country    | 300
 Classical  | 300
 Jazz       | 300
 Hiphop     | 300
+Total      | 2100
 
 
 
