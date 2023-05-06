@@ -35,6 +35,8 @@ csv_detection_path = './Resources/song_detection.csv'
 librosa_preset = Preset(librosa)
 librosa_preset['sr'] = 22050
 
+labels = ['folk', 'pop','rock','country','classical','jazz','hiphop']
+
 #=========================METHODS======================
 
 
@@ -171,15 +173,13 @@ def predict(model, X, idx):
     
     prediction = genre_dict[genre]
     
-    return prediction
-    
-    
+    return prediction, predictions
 
 
 
 #=====================Design & Entering of WAV File=================
-st.write("""# Genre Classification""")
-st.write("##### An altered version by Neil Bugeja of Eric Zacharia's 'Convolutional Neural Network Classifier'")
+st.write("""# Music Genre Classification""")
+st.write("##### A music genre classification tool intented to be used on OpenAI's Jukebox original pieces of music")
 file = st.file_uploader(
     "Upload your WAV File, and watch the CNN model classify the music genre.", type=["wav"])
 
@@ -208,14 +208,47 @@ if file is not None:
     create_mfcc('./Resources/extracted_0.wav', './Resources/extracted_1.wav','./Resources/extracted_2.wav')
 
     #Prediction of every snippet
-    prediction_snippet0 = predict(model,X,0)
-    prediction_snippet1 = predict(model,X,1)
-    prediction_snippet2 = predict(model,X,2)
+    prediction_snippet0, predictions0 = predict(model,X,0)
+    prediction_snippet1, predictions1 = predict(model,X,1)
+    prediction_snippet2, predictions2 = predict(model,X,2)
     
     #Bar Graph Configuration
-    #color_data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    #my_cmap = mpl.colormaps['gnuplot']
-    #my_norm = Normalize(vmin=0, vmax=9)
+    my_cmap = mpl.colormaps['gnuplot']
+    
+    #Bar Graph Snippet 1
+    predictions0_list = predictions0.tolist()[0]
+    
+    fig_0, ax = plt.subplots(figsize=(6, 4.5))
+    ax.bar(x=labels, height=predictions0_list, color=my_cmap(np.linspace(0, 1, len(labels))))
+    ax.set_title(
+        "Snippet 1: Probability Distribution Over Different Genres")
+    plt.xlabel("Predicted Genre")
+    plt.ylabel("Probability")
+    
+    
+    
+    #Bar Graph Snippet 2
+    predictions1_list = predictions1.tolist()[1]
+    
+    fig_1, ax_1 = plt.subplots(figsize=(6, 4.5))
+    ax_1.bar(x=labels, height=predictions1_list, color=my_cmap(np.linspace(0, 1, len(labels))))
+    ax_1.set_title(
+        "Snippet 2: Probability Distribution Over Different Genres")
+    plt.xlabel("Predicted Genre")
+    plt.ylabel("Probability")
+    
+    
+    
+    #Bar Graph Snippet 1
+    predictions2_list = predictions2.tolist()[2]
+    
+    fig_2, ax = plt.subplots(figsize=(6, 4.5))
+    ax.bar(x=labels, height=predictions2_list, color=my_cmap(np.linspace(0, 1, len(labels))))
+    ax.set_title(
+        "Snippet 3: Probability Distribution Over Different Genres")
+    plt.xlabel("Predicted Genre")
+    plt.ylabel("Probability")
+
 
     
     #==============Website Design==================
@@ -237,16 +270,14 @@ if file is not None:
         st.write(f"")
         
         st.write(f"### Genre Prediction Snippet 1: "+prediction_snippet0)
-        #st.pyplot(fig_0)
+        st.pyplot(fig_0)
         st.write(f"")
+        
+        st.bar_chart(predictions0_list, labels)
         
         st.write(f"### Mel Spectrogram First Snippet")
         st.image("Resources/mfcc_0.png", use_column_width=True)  
         
-        st.write(f"")
-        st.write(f"")
-        st.write(f"")
-        st.write(f"")
     
     #Snippet 2
     with tab2:
@@ -254,15 +285,10 @@ if file is not None:
         st.audio('Resources/extracted_1.wav', "audio/mp3")
         
         st.write(f"### Genre Prediction Snippet 2: "+prediction_snippet1)
-        #st.pyplot(fig_1)
+        st.pyplot(fig_1)
         
         st.write(f"### Mel Spectrogram Second Snippet")
         st.image("Resources/mfcc_1.png", use_column_width=True)   
-        
-        st.write(f"")
-        st.write(f"")
-        st.write(f"")
-        st.write(f"")
 
     
     
@@ -272,7 +298,7 @@ if file is not None:
         st.audio('Resources/extracted_2.wav', "audio/mp3")
         
         st.write(f"### Genre Prediction Snippet 3: "+prediction_snippet2)
-        #st.pyplot(fig_2)
+        st.pyplot(fig_2)
         
         st.write(f"### Mel Spectrogram Third Snippet")
         st.image("Resources/mfcc_2.png", use_column_width=True)
