@@ -1,26 +1,18 @@
 import streamlit as st
-import base64
-import matplotlib as mpl
 import numpy as np
 import json
 import csv
 import sys
 import numpy as np 
-import chardet
+import pandas as pd
 from pydub import AudioSegment
 from presets import Preset
 import librosa as librosa
 import librosa.display
 from tensorflow import keras
-from bing_image_downloader import downloader
-from keras.layers import Input, Dense, Activation, BatchNormalization, Flatten, Conv2D, MaxPooling2D
-from keras.models import Model
-from keras.initializers import glorot_uniform
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.cm as cm
-from matplotlib.colors import Normalize
 
 #=========================DECLARATIONS======================
 sr = 22050
@@ -37,6 +29,15 @@ librosa_preset['sr'] = 22050
 
 labels = ['folk', 'pop','rock','country','classical','jazz','hiphop']
 
+genre_dict = {
+        0 : "folk",
+        1 : "pop",
+        2 : "rock",
+        3 : "country",
+        4 : "classical",
+        5 : "jazz",
+        6 : "hiphop",
+        }
 #=========================METHODS======================
 
 
@@ -185,9 +186,6 @@ file = st.file_uploader(
 
 
 
-
-
-
 #------------------------Model Loading----------------------------
 model = keras.models.load_model('./Model Final/MFCC_Model')
 
@@ -211,47 +209,24 @@ if file is not None:
     prediction_snippet0, predictions0 = predict(model,X,0)
     prediction_snippet1, predictions1 = predict(model,X,1)
     prediction_snippet2, predictions2 = predict(model,X,2)
+
     
-    #Bar Graph Configuration
-    my_cmap = mpl.colormaps['gnuplot']
-    
-    #Bar Graph Snippet 1
+    #Bar Graph Predictions List
     predictions0_list = predictions0.tolist()[0]
-    
-    fig_0, ax = plt.subplots(figsize=(6, 4.5))
-    ax.bar(x=labels, height=predictions0_list, color=my_cmap(np.linspace(0, 1, len(labels))))
-    ax.set_title(
-        "Snippet 1: Probability Distribution Over Different Genres")
-    plt.xlabel("Predicted Genre")
-    plt.ylabel("Probability")
-    
-    
-    
-    #Bar Graph Snippet 2
     predictions1_list = predictions1.tolist()[1]
-    
-    fig_1, ax_1 = plt.subplots(figsize=(6, 4.5))
-    ax_1.bar(x=labels, height=predictions1_list, color=my_cmap(np.linspace(0, 1, len(labels))))
-    ax_1.set_title(
-        "Snippet 2: Probability Distribution Over Different Genres")
-    plt.xlabel("Predicted Genre")
-    plt.ylabel("Probability")
-    
-    
-    
-    #Bar Graph Snippet 1
     predictions2_list = predictions2.tolist()[2]
     
-    fig_2, ax = plt.subplots(figsize=(6, 4.5))
-    ax.bar(x=labels, height=predictions2_list, color=my_cmap(np.linspace(0, 1, len(labels))))
-    ax.set_title(
-        "Snippet 3: Probability Distribution Over Different Genres")
-    plt.xlabel("Predicted Genre")
-    plt.ylabel("Probability")
-
+    #Data Frame for plotting graph
+    df0 = pd.DataFrame(predictions0_list, index=['folk', 'pop','rock','country','classical','jazz','hiphop'])
+    df1 = pd.DataFrame(predictions1_list, index=['folk', 'pop','rock','country','classical','jazz','hiphop'])
+    df2 = pd.DataFrame(predictions2_list, index=['folk', 'pop','rock','country','classical','jazz','hiphop'])
+    
 
     
     #==============Website Design==================
+    st.write(f"")
+    st.write(f"")
+    
     st.write(f"### Full Song:")
     st.audio(file, "audio/mp3")
     
@@ -270,13 +245,14 @@ if file is not None:
         st.write(f"")
         
         st.write(f"### Genre Prediction Snippet 1: "+prediction_snippet0)
-        st.pyplot(fig_0)
+        st.bar_chart(df0)
         st.write(f"")
-        
-        st.bar_chart(predictions0_list, labels)
         
         st.write(f"### Mel Spectrogram First Snippet")
         st.image("Resources/mfcc_0.png", use_column_width=True)  
+        
+        
+        
         
     
     #Snippet 2
@@ -285,7 +261,8 @@ if file is not None:
         st.audio('Resources/extracted_1.wav', "audio/mp3")
         
         st.write(f"### Genre Prediction Snippet 2: "+prediction_snippet1)
-        st.pyplot(fig_1)
+        #st.pyplot(fig_1)
+        st.bar_chart(df1)
         
         st.write(f"### Mel Spectrogram Second Snippet")
         st.image("Resources/mfcc_1.png", use_column_width=True)   
@@ -298,7 +275,8 @@ if file is not None:
         st.audio('Resources/extracted_2.wav', "audio/mp3")
         
         st.write(f"### Genre Prediction Snippet 3: "+prediction_snippet2)
-        st.pyplot(fig_2)
+        #st.pyplot(fig_2)
+        st.bar_chart(df2)
         
         st.write(f"### Mel Spectrogram Third Snippet")
         st.image("Resources/mfcc_2.png", use_column_width=True)
