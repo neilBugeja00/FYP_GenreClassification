@@ -117,12 +117,12 @@ def create_mfcc(wav_file_0, wav_file_1, wav_file_2):
     #First snippet
     y, sr = librosa.load(wav_file_0, duration=10)
     mfcc0 = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
-    #fig = plt.Figure()
     fig, ax = plt.subplots(figsize=(10, 4))
-    plt.imshow(mfcc0, interpolation='nearest', origin='lower', aspect='auto', cmap=cm.coolwarm)
+    librosa.display.specshow(mfcc0,
+                        x_axis='time',
+                        sr=sr)
     plt.colorbar()
-    plt.title('MFCCs')
-    plt.xlabel('Frame')
+    plt.title('MFCC')
     plt.ylabel('MFCC Coefficients')
         
     FigureCanvasAgg(fig)
@@ -131,12 +131,12 @@ def create_mfcc(wav_file_0, wav_file_1, wav_file_2):
     #Second snippet
     y, sr = librosa.load(wav_file_1, duration=10)
     mfcc1 = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
-    #fig = plt.Figure()
     fig, ax = plt.subplots(figsize=(10, 4))
-    plt.imshow(mfcc1, interpolation='nearest', origin='lower', aspect='auto', cmap=cm.coolwarm)
+    librosa.display.specshow(mfcc1,
+                        x_axis='time',
+                        sr=sr)
     plt.colorbar()
-    plt.title('MFCCs')
-    plt.xlabel('Frame')
+    plt.title('MFCC')
     plt.ylabel('MFCC Coefficients')
         
     FigureCanvasAgg(fig)
@@ -147,10 +147,11 @@ def create_mfcc(wav_file_0, wav_file_1, wav_file_2):
     mfcc2 = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
     #fig = plt.Figure()
     fig, ax = plt.subplots(figsize=(10, 4))
-    plt.imshow(mfcc2, interpolation='nearest', origin='lower', aspect='auto', cmap=cm.coolwarm)
+    librosa.display.specshow(mfcc2,
+                        x_axis='time',
+                        sr=sr)
     plt.colorbar()
-    plt.title('MFCCs')
-    plt.xlabel('Frame')
+    plt.title('MFCC')
     plt.ylabel('MFCC Coefficients')
         
     FigureCanvasAgg(fig)
