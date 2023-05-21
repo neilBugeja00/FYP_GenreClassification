@@ -27,16 +27,15 @@ csv_detection_path = './Resources/song_detection.csv'
 librosa_preset = Preset(librosa)
 librosa_preset['sr'] = 22050
 
-labels = ['folk', 'pop','rock','country','classical','jazz','hiphop']
+labels = ['classical', 'folk', 'hiphop', 'jazz', 'pop', 'rock']
 
-genre_dict = {
-        0 : "folk",
-        1 : "pop",
-        2 : "rock",
-        3 : "country",
-        4 : "classical",
-        5 : "jazz",
-        6 : "hiphop",
+enre_dict = {
+        0 : "classical",
+        1 : "folk",
+        2 : "hiphop",
+        3 : "jazz",
+        4 : "pop",
+        5 : "rock",
         }
 #=========================METHODS======================
 
@@ -161,13 +160,12 @@ def create_mfcc(wav_file_0, wav_file_1, wav_file_2):
 def predict(model, X, idx):
     
     genre_dict = {
-        0 : "folk",
-        1 : "pop",
-        2 : "rock",
-        3 : "country",
-        4 : "classical",
-        5 : "jazz",
-        6 : "hiphop",
+        0 : "classical",
+        1 : "folk",
+        2 : "hiphop",
+        3 : "jazz",
+        4 : "pop",
+        5 : "rock",
         }
         
     predictions = model.predict(X)
@@ -188,8 +186,7 @@ file = st.file_uploader(
 
 
 #------------------------Model Loading----------------------------
-model = keras.models.load_model('./Model Final/MFCC_Model')
-
+model = keras.models.load_model('./MFCC 10secs Model')
 
 #=========================Start Genre Classification==========================
 if file is not None:   
@@ -218,9 +215,9 @@ if file is not None:
     predictions2_list = predictions2.tolist()[2]
     
     #Data Frame for plotting graph
-    df0 = pd.DataFrame(predictions0_list, index=['folk', 'pop','rock','country','classical','jazz','hiphop'])
-    df1 = pd.DataFrame(predictions1_list, index=['folk', 'pop','rock','country','classical','jazz','hiphop'])
-    df2 = pd.DataFrame(predictions2_list, index=['folk', 'pop','rock','country','classical','jazz','hiphop'])
+    df0 = pd.DataFrame(predictions0_list, index=labels)
+    df1 = pd.DataFrame(predictions1_list, index=labels)
+    df2 = pd.DataFrame(predictions2_list, index=labels)
     
 
     
@@ -249,7 +246,7 @@ if file is not None:
         st.bar_chart(df0)
         st.write(f"")
         
-        st.write(f"### Mel Spectrogram First Snippet")
+        st.write(f"### MFCC First Snippet")
         st.image("Resources/mfcc_0.png", use_column_width=True)  
         
         
@@ -265,7 +262,7 @@ if file is not None:
         #st.pyplot(fig_1)
         st.bar_chart(df1)
         
-        st.write(f"### Mel Spectrogram Second Snippet")
+        st.write(f"### MFCC Second Snippet")
         st.image("Resources/mfcc_1.png", use_column_width=True)   
 
     
@@ -279,7 +276,7 @@ if file is not None:
         #st.pyplot(fig_2)
         st.bar_chart(df2)
         
-        st.write(f"### Mel Spectrogram Third Snippet")
+        st.write(f"### MFCC Third Snippet")
         st.image("Resources/mfcc_2.png", use_column_width=True)
         
     
