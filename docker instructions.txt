@@ -1,0 +1,8 @@
+1. Setup docker on your local machine
+2. Run the following in terminal to create an image: 
+    docker build -t music_classifier .
+3. After the image is completed, run the following to create a container:
+    docker run -p 8501:8510 music_classifier
+
+
+This should create a container on your machine with the same environment used during creation by the author.

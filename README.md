@@ -5,7 +5,6 @@ Preprocessing:
 The model was trained using a modified version of the FMA_Medium dataset. Initially, the full dataset was sorted based on their genres. After this, data was cleaned (corrupted files removed as per FMA github), and certain genres were removed. This decision was taken based on their popularity (ex: historic genre was ignored) and the amount of songs present in each genre. Additionally, to avoid having an unbalanced dataset, certain songs were also removed. Lastly, to increase the dataset size and to allow the model to detect the genre of a 10 second snippet song, all smaples were split in three. 
 
 Below is a table of the final modified dataset used to train the model:
-<<<<<<< HEAD
 
 Genre      | Number of songs
 -----------| -------------
